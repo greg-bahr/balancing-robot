@@ -1,4 +1,5 @@
 #include "motor.h"
+#include "pid_controller.h"
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
@@ -13,6 +14,7 @@
 #define POT_IN 5
 
 Motor *left, *right;
+PidController *pid;
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 void setup(void)
@@ -20,6 +22,8 @@ void setup(void)
     Serial.begin(9600);
     left = new Motor(ENA, IN1, IN2);
     right = new Motor(ENB, IN3, IN4);
+    pid = new PidController(0.04, 0, 0);
+    pid->SetTargetValue(0);
 
     if (!bno.begin())
     {
@@ -36,16 +40,16 @@ void setup(void)
 
 void loop(void)
 {
-    /* Get a new sensor event */
     sensors_event_t event;
     bno.getEvent(&event);
 
-    /* Display the floating point data */
-    // Serial.print("X: ");
-    // Serial.print(event.orientation.x, 4);
-    // Serial.print("\tY: ");
-    // Serial.print(event.orientation.y, 4);
-    // Serial.print("\tZ: ");
-    // Serial.print(event.orientation.z, 4);
-    // Serial.println("");
+    pid->Update(event.orientation.z);
+
+    double output = pid->GetOutput();
+
+    // Serial.print("Output: ");
+    // Serial.println(output);
+
+    left->SetPower(output);
+    right->SetPower(output);
 }

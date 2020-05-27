@@ -20,6 +20,7 @@ public:
 
 private:
     int pwm_, in_one_, in_two_;
+    MotorDirection current_direction_, direction_;
 };
 
 #endif /* MOTOR_H */
